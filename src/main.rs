@@ -1,5 +1,6 @@
 use std::env;
 use std::env::Args;
+use std::error::Error;
 use std::fs;
 use std::process;
 
@@ -18,7 +19,10 @@ fn main() {
     println!("In file {}", config.file_path);
 
     // print out contents
-    run(config);
+    if let Err(e) = run(config) {   // Err(e) receives Result<> to make "e" receive Box<> is like destructuring
+        println!("Application Error: {e}");
+        process::exit(1);
+    }
 }
 
 struct Config{
@@ -45,8 +49,8 @@ impl Config{
     }
 }
 
-fn run(config: Config){
-    let content = fs::read_to_string(config.file_path)
-        .expect("Should be able to read the file.");
+fn run(config: Config)-> Result<(), Box<dyn Error>> {   // () 是 unit type; Box<dyn Error> 是 Boxed error type，拥有 error trait，但是丢失了信息。
+    let content = fs::read_to_string(config.file_path)?;
     println!("With a content:\n{content}");
+    Ok(())
 }
